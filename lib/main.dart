@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_doctorappqueue/services/database_helper.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // Required for async operations before runApp
+  final dbHelper = DatabaseHelper();
+  await dbHelper.initializeDatabase(); // Initialize the database
   runApp(const MyApp());
 }
 
