@@ -1,30 +1,48 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:flutter_doctorappqueue/main.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter_doctorappqueue/providers/queue_provider.dart';
+import 'package:flutter_doctorappqueue/services/database_helper.dart';
+import 'package:flutter_doctorappqueue/services/notification_service.dart';
+import 'package:go_router/go_router.dart'; // Import GoRouter
+import 'package:flutter_doctorappqueue/screens/queue_screen.dart'; // Import QueueScreen
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('QueueScreen displays initial message', (WidgetTester tester) async {
+    // 1. Create instances of DatabaseHelper and LocalNotificationService
+    final dbHelper = DatabaseHelper();
+    await dbHelper.initializeDatabase(); // Important!
+    final localNotificationService = LocalNotificationService();
+    await localNotificationService.initialize();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // 2. Define a simple GoRouter for the test
+    final GoRouter router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => const QueueScreen(),
+        ),
+      ],
+    );
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // 3. Build the app with MultiProvider and MaterialApp.router
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(
+            create: (context) => QueueProvider(
+              dbHelper: dbHelper,
+              localNotificationService: localNotificationService,
+            ),
+          ),
+        ],
+        child: MaterialApp.router(
+          routerConfig: router, // Use the GoRouter instance
+        ),
+      ),
+    );
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // 4. Verify that the initial message is displayed
+    expect(find.text('Doctor/Patient Queue'), findsOneWidget);
   });
 }
