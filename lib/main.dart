@@ -6,6 +6,8 @@ import 'package:flutter_doctorappqueue/screens/queue_screen.dart';
 import 'package:flutter_doctorappqueue/services/notification_service.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_doctorappqueue/screens/patient_details_screen.dart';
+import 'package:flutter_doctorappqueue/screens/patient_view_screen.dart'; // Import PatientViewScreen
+import 'package:flutter_doctorappqueue/screens/welcome_screen.dart';   // Import WelcomeScreen
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,12 +18,13 @@ void main() async {
   await localNotificationService.initialize();
   await localNotificationService.requestPermissions();
 
-  final GoRouter _router = GoRouter(
+final GoRouter _router = GoRouter(
+    initialLocation: '/',
     routes: <RouteBase>[
       GoRoute(
         path: '/',
         builder: (BuildContext context, GoRouterState state) {
-          return const QueueScreen();
+          return const WelcomeScreen();
         },
         routes: <RouteBase>[
           GoRoute(
@@ -29,6 +32,19 @@ void main() async {
             builder: (BuildContext context, GoRouterState state) {
               final patientId = state.pathParameters['patientId']!;
               return PatientDetailsScreen(patientId: patientId);
+            },
+          ),
+          GoRoute(
+            path: 'patient_view/:patientId',
+            builder: (BuildContext context, GoRouterState state) {
+              final patientId = state.pathParameters['patientId']!;
+              return PatientViewScreen(patientId: patientId);
+            },
+          ),
+          GoRoute(
+            path: 'queue',
+            builder: (BuildContext context, GoRouterState state) {
+              return const QueueScreen();
             },
           ),
         ],
